@@ -1,21 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { useParams } from "next/navigation";
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
 
-const Register = () => {
-
+const Update = () => {
+    const route = useRouter();
     const coursesList = [
         { id: "c1", name: "Math" },
         { id: "c2", name: "Science" },
         { id: "c3", name: "English" },
     ];
-    
     const [formData, setFormData] = useState({
         name: "",
         degree: "",
         image: null,
         selectedCourses: []
     })
+    const { id } = useParams();
+    console.log("id " + id);
+    const [teacher, setTeacher] = useState(null);
+    const url = process.env.NEXT_PUBLIC_API_URL + `/teacher/${id}`;
+
+    useEffect(() => {
+        const getTeacher = async () => {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const teacherData = await response.json();
+                console.log(teacherData);
+                setTeacher(teacherData);
+                setFormData({
+                    name: teacherData.name,
+                    degree: teacherData.degree,
+                    image: teacherData.profileImage,
+                    selectedCourses: teacherData.selectedCourses
+                })
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        getTeacher();
+    }, [id]);
+
+    console.log(teacher);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -30,10 +60,10 @@ const Register = () => {
         data.append("ProfileImage", formData.image);
 
         console.log("Submitting teacher:", data);
-        console.log("API URL:", process.env.NEXT_PUBLIC_API_URL + '/teacher');
+        console.log("API URL:", process.env.NEXT_PUBLIC_API_URL + `/teacher/${id}`);
         try {
-            await fetch(process.env.NEXT_PUBLIC_API_URL + '/teacher', {
-                method: 'POST',
+            await fetch(process.env.NEXT_PUBLIC_API_URL + `/teacher/${id}`, {
+                method: 'PUT',
                 body: data,
             }).then((response) => {
                 if (response.ok) {
@@ -48,6 +78,7 @@ const Register = () => {
                 degree: "",
                 selectedCourses: []
             })
+            route.push("/teachers");
         } catch (error) {
             console.error("Error submitting form:", error.message);
         }
@@ -128,4 +159,4 @@ const Register = () => {
     )
 }
 
-export default Register;
+export default Update;

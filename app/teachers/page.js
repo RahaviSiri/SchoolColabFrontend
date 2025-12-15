@@ -26,6 +26,7 @@ const Teachers = () => {
   const handleClick = () => {
     route.push('/teachers/register');
   }
+  console.log(teachers);
 
   return (
     <div>
